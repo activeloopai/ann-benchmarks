@@ -5,7 +5,7 @@ float:
     disabled: false
     docker_tag: ann-benchmarks-deeplake
     module: ann_benchmarks.algorithms.deeplake
-    name: Deeplake
+    name: deeplake
     run_groups:
       M-12:
         arg_groups: [{M: 12, efConstruction: 500}]
