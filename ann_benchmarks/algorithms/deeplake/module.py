@@ -1,10 +1,8 @@
 import deeplake
-from deeplake.core.vectorstore.vector_search.indra.index import METRIC_TO_INDEX_METRIC
-from deeplake.core.vectorstore.deeplake_vectorstore import DeepLakeVectorStore
-import os
-import threading
-import subprocess
 import numpy as np
+import os
+import random
+import string
 from ..base.module import BaseANN
 
 
@@ -23,15 +21,13 @@ class DeeplakeHnsw(BaseANN):
         self._ef_construction = param.get("efConstruction", 200)
         self._m = param.get("M", 16)
         self.dimension = dimension
-        self.local_path = "ANN_benchmarks-embeddings"
+        suffix = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(8)) 
+        self.local_path = f"ANN_benchmarks-embeddings_{suffix}"
         self.name = "deeplake"
         self.token = os.environ.get('ACTIVELOOP_TOKEN')
 
     def __del__(self):
-        if hasattr(self, 'ds'):
-            del self.ds
-        if hasattr(self, 'index'):
-            del self.index
+        self.freeIndex()
 
     def fit(self, X):
         self.ds = deeplake.dataset(self.local_path, overwrite=True, token=self.token)
@@ -54,7 +50,10 @@ class DeeplakeHnsw(BaseANN):
         return f"Deeplake(m={self._m}, ef_construction={self._ef_construction})"
 
     def freeIndex(self):
-        if hasattr(self, 'ds'):
-            del self.ds
         if hasattr(self, 'index'):
             del self.index
+        if hasattr(self, 'ds'):
+            del self.ds
+            deeplake.delete(self.local_path)
+        if os.path.isfile(f"/tmp/{self.local_path}/embedding"):
+            os.remove(f"/tmp/{self.local_path}/embedding")
