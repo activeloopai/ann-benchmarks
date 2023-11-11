@@ -25,13 +25,14 @@ class DeeplakeHnsw(BaseANN):
         self.local_path = f"ANN_benchmarks-embeddings_{suffix}"
         self.name = "deeplake"
         self.token = os.environ.get('ACTIVELOOP_TOKEN')
+        self.org = os.environ.get('ACTIVELOOP_ORG')
 
     def __del__(self):
         self.freeIndex()
 
     def fit(self, X):
-        self.ds = deeplake.dataset(self.local_path, overwrite=True, token=self.token)
-        self.ds.create_tensor("embedding", htype="embedding", dtype="float32")
+        self.ds = deeplake.dataset(self.local_path, overwrite=True, token=self.token, org_id=self.org)
+        self.ds.create_tensor("embedding", htype="embedding", dtype="float32", create_shape_tensor=False, create_id_tensor=False)
         self.ds.embedding.extend(X)
         self.ds.embedding.create_vdb_index("hnsw_1", distance=self.metric, additional_params={
             "efConstruction": self._ef_construction, "M": self._m
