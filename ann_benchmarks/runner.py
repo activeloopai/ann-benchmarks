@@ -319,7 +319,6 @@ def run_docker(
     if mem_limit is None:
         mem_limit = psutil.virtual_memory().available
 
-    active_loop_token = os.environ.get('ACTIVELOOP_TOKEN')
     container = client.containers.run(
         definition.docker_tag,
         cmd,
@@ -328,7 +327,6 @@ def run_docker(
             os.path.abspath("data"): {"bind": "/home/app/data", "mode": "ro"},
             os.path.abspath("results"): {"bind": "/home/app/results", "mode": "rw"},
         },
-        environment={"ACTIVELOOP_TOKEN": active_loop_token, "BUGGER_OFF": "true"},
         cpuset_cpus=cpu_limit,
         mem_limit=mem_limit,
         detach=True,
